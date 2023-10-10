@@ -39,7 +39,13 @@ export class mockingCSVData {
     return this.filemap.get(file);
   }
 
-  mockedSearch1(file: string) {
-    return this.filemap.get(file)?.at(1);
+  mockedSearch1(file: string, columnIndex: number, value: string) {
+    const data = this.filemap.get(file);
+    if (data) {
+      return data.filter(
+        (row, rowIndex) => rowIndex === 0 || row[columnIndex] === value
+      );
+    }
+    return [];
   }
 }

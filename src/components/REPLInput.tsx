@@ -28,6 +28,7 @@ export function REPLInput(props: REPLInputProps) {
   const [filepath, setFilepath] = useState<string>("");
   //const [csvData, setCSVData] = useState<string[][]>();
 
+
   const json = new mockingCSVData();
 function showCSVData(data: string[][]) {
   if (!data || data.length === 0) {
@@ -55,10 +56,40 @@ function showCSVData(data: string[][]) {
     );
   } 
   
+    function handleSearch(column: string, value: string) {
+      if (filepath) {
+        const data = json.mockedSearch1(filepath,parseInt(column),value);
+        if (data) {
+          const columnIndex = isNaN(Number(column))
+            ? data[0].indexOf(column)
+            : Number(column);
+          if (columnIndex !== -1) {
+            const filteredData = data.filter(
+              (row, rowIndex) => rowIndex === 0 || row[columnIndex] === value
+            );
+            setMessage("Search completed successfully!");
+            const table = showCSVData(filteredData);
+            props.setHistory([
+              ...props.history,
+              <h4>
+                Command: search {column} {value}
+              </h4>,
+              <div>Output: {table}</div>,
+            ]);
+          } else {
+            setMessage("Column not found.");
+          }
+        }
+      } else {
+        setMessage("Load a CSV file first.");
+      }
+      setCommandString("");
+    }
 
 
   // This function is triggered when the button is clicked.
   function handleSubmit(commandString: string) {
+    setCount(count+1)
     if (commandString.includes('mode')){
         const words = commandString.split(" ");
         if (words.length > 1 && (words[1] === "brief" || words[1] === "verbose")) {
@@ -100,13 +131,22 @@ function showCSVData(data: string[][]) {
              <div>Output: {table}</div>,
            ]);
           }else{
-            props.setHistory([...props.history, table])
+            props.setHistory([...props.history, table])}
           }
-
         }
       }
-    }
-    setCommandString("");
+      if (commandString.includes("search")) {
+        const searchWords = commandString.split(" ");
+        if (searchWords.length === 3) {
+          const column = searchWords[1];
+          const value = searchWords[2];
+          handleSearch(column, value);
+        } else {
+          setMessage("Invalid search command. Use 'search <column> <value>'.");
+        }
+      }
+
+    //setCommandString("");
   }
   /**
    * We suggest breaking down this component into smaller components, think about the individual pieces
