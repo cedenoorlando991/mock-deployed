@@ -9,8 +9,9 @@ interface REPLInputProps {
   // CHANGED
   history: ReactElement[];
   setHistory: Dispatch<SetStateAction<ReactElement[]>>;
-  csvData: string[][];
-  setCSVData: Dispatch<SetStateAction<string[][]>>;
+
+ // csvData: string[][];
+  //setCSVData: Dispatch<SetStateAction<string[][]>>;
 }
 
 let path = "";
@@ -19,32 +20,89 @@ let path = "";
 export function REPLInput(props: REPLInputProps) {
   // Remember: let React manage state in your webapp.
   // Manages the contents of the input box
+  const [message,setMessage] = useState<string>("Enter a command:")
   const [commandString, setCommandString] = useState<string>("");
+  const [mode,setMode] = useState<string>("brief");
   // Manages the current amount of times the button is clicked
   const [count, setCount] = useState<number>(0);
-
   const [filepath, setFilepath] = useState<string>("");
-  const [csvData, setCSVData] = useState<string[][]>();
+  //const [csvData, setCSVData] = useState<string[][]>();
 
   const json = new mockingCSVData();
+function showCSVData(data: string[][]) {
+  if (!data || data.length === 0) {
+    return <p>No data to display.</p>;
+  }
+    return (
+      <table style={{ margin: "auto" }}>
+        <thead>
+          <tr>
+            {data[0].map((header) => (
+              <th key={header}>{header}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.slice(1).map((row, index) => (
+            <tr key={index}>
+              {row.map((cell, cellIndex) => (
+                <td key={cellIndex}>{cell}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  } 
+  
+
 
   // This function is triggered when the button is clicked.
   function handleSubmit(commandString: string) {
-    setCount(count + 1);
-    console.log("working");
+    if (commandString.includes('mode')){
+        const words = commandString.split(" ");
+        if (words.length > 1 && (words[1] === "brief" || words[1] === "verbose")) {
+          setMessage("Mode set to: " + words[1] + "!");
+          setMode(words[1]);
+        } else {
+          setMessage("Invalid mode. Please enter 'brief' or 'verbose'.");
+        }
+        return;
+    }
     props.setHistory([...props.history, <h4>{commandString}</h4>]);
     if (commandString.includes("load_file")) {
+      setCommandString("load_file");
       path = commandString.slice(10);
-      setFilepath(path);
+      setFilepath(path); //might have to check if filepath was correct before setting message
+      setMessage("Data Loaded Successfully!");
+      if (mode === 'verbose'){
+          props.setHistory([
+            ...props.history,
+            <h4>Command: load_file</h4>,
+            <p>Output: Data Loaded Successfully!</p>,
+          ]);
+      }
+     
       console.log(path);
     }
     if (commandString.includes("view")) {
       if (path) {
+        setCommandString("view");
         const data = json.mockedView(path);
         console.log(data);
         if (data) {
+          setMessage("Data View Success!")
           const table = showCSVData(data);
-          props.setHistory([...props.history, table]);
+          if (mode === 'verbose'){
+           props.setHistory([
+             ...props.history,
+             <h4>Command: {commandString}</h4>,
+             <div>Output: {table}</div>,
+           ]);
+          }else{
+            props.setHistory([...props.history, table])
+          }
+
         }
       }
     }
@@ -61,7 +119,7 @@ export function REPLInput(props: REPLInputProps) {
       {/* I opted to use this HTML tag; you don't need to. It structures multiple input fields
             into a single unit, which makes it easier for screenreaders to navigate. */}
       <fieldset>
-        <legend>Enter a command:</legend>
+        <legend>{message}</legend>
         <ControlledInput
           value={commandString}
           setValue={setCommandString}
@@ -76,28 +134,4 @@ export function REPLInput(props: REPLInputProps) {
   );
 }
 
-function showCSVData(data: string[][]) {
-  if (!data || data.length === 0) {
-    return <p>No data to display.</p>;
-  }
-  return (
-    <table>
-      <thead>
-        <tr>
-          {data[0].map((header) => (
-            <th key={header}>{header}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {data.slice(1).map((row, index) => (
-          <tr key={index}>
-            {row.map((cell, cellIndex) => (
-              <td key={cellIndex}>{cell}</td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
+
