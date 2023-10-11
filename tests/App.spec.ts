@@ -24,7 +24,7 @@ test.beforeEach(() => {
 test('on page load, i see an input bar', async ({ page }) => {
   // Notice: http, not https! Our front-end is not set up for HTTPs.
   await page.goto('http://localhost:8000/');
-  await expect(page.getByLabel('Enter command here!')).toBeVisible()
+  await expect(page.getByLabel("Command input")).toBeVisible();
 })
 
 test('after I type into the input box, its text changes', async ({ page }) => {
