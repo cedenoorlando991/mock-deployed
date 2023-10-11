@@ -56,35 +56,33 @@ function showCSVData(data: string[][]) {
     );
   } 
   
-    // function handleSearch(column: string, value: string) {
-    //   if (filepath) {
-    //     const data = json.mockedSearch1(filepath,parseInt(column),value);
-    //     if (data) {
-    //       const columnIndex = isNaN(Number(column))
-    //         ? data[0].indexOf(column)
-    //         : Number(column);
-    //       if (columnIndex !== -1) {
-    //         const filteredData = data.filter(
-    //           (row, rowIndex) => rowIndex === 0 || row[columnIndex] === value
-    //         );
-    //         setMessage("Search completed successfully!");
-    //         const table = showCSVData(filteredData);
-    //         props.setHistory([
-    //           ...props.history,
-    //           <h4>
-    //             Command: search {column} {value}
-    //           </h4>,
-    //           <div>Output: {table}</div>,
-    //         ]);
-    //       } else {
-    //         setMessage("Column not found.");
-    //       }
-    //     }
-    //   } else {
-    //     setMessage("Load a CSV file first.");
-    //   }
-    //   setCommandString("");
-    // }
+    function handleSearch(column: string, value: string) {
+      if (filepath) {
+        setCommandString("search");
+        const data = json.mockedView(filepath);
+        if (data) {
+          const columnIndex = isNaN(Number(column))? data[0].indexOf(column): Number(column);
+          if (columnIndex !== -1) {
+            const filteredData = data.filter((row, rowIndex) => rowIndex === 0 || row[columnIndex] === value);
+            setMessage("Search completed successfully!");
+            const table = showCSVData(filteredData);
+            if (mode === "verbose"){
+              props.setHistory([
+                ...props.history,
+                <h4>Command: {commandString}</h4>,
+                <div>Output: {table}</div>,
+              ]);
+            }else{
+               props.setHistory([...props.history, table]);
+            }
+          } else {
+            setMessage("Column not found.");
+          }
+        }
+      } else {
+        setMessage("Load a CSV file first.");
+      }
+    }
 
 
   // This function is triggered when the button is clicked.
@@ -113,7 +111,6 @@ function showCSVData(data: string[][]) {
             <p>Output: Data Loaded Successfully!</p>,
           ]);
       }
-     
       console.log(path);
     }
     if (commandString.includes("view")) {
@@ -140,27 +137,7 @@ function showCSVData(data: string[][]) {
         if (searchWords.length === 3) {
           const column = searchWords[1];
           const value = searchWords[2];
-          let hasHeader=true;
-          if (!isNaN(parseInt(column))){
-            hasHeader=false;
-          }
-          if(path){
-            const data=json.mockedSearch1(path);
-            if(data){
-              const table=showCSVData(data);
-              setCommandString("search");
-              if (mode === "verbose") {
-                props.setHistory([
-                  ...props.history,
-                  <h4>Command: {commandString}</h4>,
-                  <p>Output: {table}</p>,
-                ]);
-              } else {
-                props.setHistory([...props.history, table]);
-              }
-
-            }
-          }
+          handleSearch(column,value);
         } else {
           setMessage("Invalid search command. Use 'search <column> <value>'.");
         }
