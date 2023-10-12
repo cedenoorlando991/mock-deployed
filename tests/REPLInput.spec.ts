@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto("http://localhost:8000");
 });
 
-// Test to check if REPLInput component is rendered initially
+/*Test to check if REPLInput component is rendered initially*/
 test("should render REPLInput component initially", async ({ page }) => {
   const replInput = await page.$("#root > div > div > div.repl-input");
   expect(replInput).toBeTruthy();
