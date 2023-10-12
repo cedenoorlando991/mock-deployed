@@ -118,25 +118,58 @@ test("load two files consecutively", async ({ page }) => {
 
   // Check if the data from the second file is displayed correctly
   const newHistoryList = await page.$eval(
-    //#root > div > div > div.repl-history > div:nth-child(3) > table > tbody > tr:nth-child(1) > td:nth-child(1)
     "#root > div > div > div.repl-history > div:nth-child(3) > table > tbody > tr:nth-child(1) > td:nth-child(1)",
     (el) => (el as HTMLTableCellElement).textContent
   );
   expect(newHistoryList).toBe("Monday");
 });
 
-test("search should return an empty result", async ({ page }) => {
-  // Fill the input field with a search command that will return no results and click the button
+test("search should return column not existed", async ({ page }) => {
+  //load the file
   await page.fill(
     "#root > div > div > div.repl-input > fieldset > input",
-    "search non_existent_data"
+    "load_file week_plan.csv");
+  await page.click("#root > div > div > div.repl-input > button");
+
+  //view the file
+  await page.fill(
+    "#root > div > div > div.repl-input > fieldset > input",
+    "view"
   );
   await page.click("#root > div > div > div.repl-input > button");
 
-  // Check if the result is empty
-  const result = await page.$eval(
-    "#root > div > div > div.repl-output > div",
-    (el) => (el as HTMLDivElement).textContent
+  //search column not existed
+  await page.fill(
+    "#root > div > div > div.repl-input > fieldset > input",
+    "search name Abby"
   );
-  expect(result).toBe("No results found.");
+  await page.click("#root > div > div > div.repl-input > button");
+
+  const message = await page.$eval(
+    "#root > div > div > div.repl-input > fieldset > legend",
+    (el) => (el as HTMLLegendElement).textContent
+  );
+  expect(message).toBe("Column not found.");
+});
+
+//search an empty 
+test("search should return empty result", async ({ page }) => {
+  //search column not existed
+  await page.fill(
+    "#root > div > div > div.repl-input > fieldset > input",
+    "load_file empty.csv"
+  );
+  await page.click("#root > div > div > div.repl-input > button");
+
+  await page.fill(
+    "#root > div > div > div.repl-input > fieldset > input",
+    "search name Abby");
+
+  await page.click("#root > div > div > div.repl-input > button");
+
+  const message = await page.$eval(
+    "#root > div > div > div.repl-input > fieldset > legend",
+    (el) => (el as HTMLLegendElement).textContent
+  );
+  expect(message).toBe("Data Loaded Successfully!");
 });
