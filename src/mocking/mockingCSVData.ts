@@ -8,17 +8,19 @@ export class mockingCSVData {
     this.filemap.set("people.csv", [
       ["name", "age"],
       ["Abby", "18"],
-      ["Tom", "24"],
+      ["Tom", "24"]
     ]);
 
     this.filemap.set("week_plan.csv", [
       ["Day", "plan"],
       ["Monday", "study"],
       ["Tuesday", "swim"],
-      ["Wednesday", "trip"],
+      ["Wednesday", "trip"]
     ]);
 
     this.filemap.set("empty.csv", []);
+
+    this.filemap.set("one_column.csv", [["hello"], ["world"]]);
   }
 
   mockedLoad(file: string) {

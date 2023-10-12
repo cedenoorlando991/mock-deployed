@@ -173,3 +173,26 @@ test("search should return empty result", async ({ page }) => {
   );
   expect(message).toBe("Data Loaded Successfully!");
 });
+
+test("should handle a dataset with only one column", async ({ page }) => {
+  // Load the file with only one column
+  await page.fill(
+    "#root > div > div > div.repl-input > fieldset > input",
+    "load_file one_column.csv"
+  );
+  await page.click("#root > div > div > div.repl-input > button");
+
+  // Use the view command to display the contents of the file
+  await page.fill(
+    "#root > div > div > div.repl-input > fieldset > input",
+    "view"
+  );
+  await page.click("#root > div > div > div.repl-input > button");
+
+  // Check if the data from the file is displayed correctly
+  const output = await page.$eval(
+    "#root > div > div > div.repl-output > div",
+    (el) => (el as HTMLDivElement).textContent
+  );
+  expect(output).toBe("Expected output");
+});
