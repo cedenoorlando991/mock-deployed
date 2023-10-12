@@ -1,17 +1,21 @@
 import { ReactElement } from 'react';
 import '../styles/main.css';
 
+/**
+ * This is the interface for the history of REPL's props
+ */
 interface REPLHistoryProps{
-    // TODO: Fill with some shared state tracking all the pushed commands
-    // CHANGED
     history: ReactElement[]
 }
+
+/**
+ * This is the method to map the history with specific index
+ */
 export function REPLHistory(props : REPLHistoryProps) {
     return (
         <div className="repl-history">
             {/* This is where command history will go */}
-            {/* TODO: To go through all the pushed commands... try the .map() function! */}
-            {/* CHANGED */}
+            {/* Go through all the pushed commands and use the .map() function! */}
             {props.history.map((command, index) => <div>{command}</div>)}
         </div>
     );

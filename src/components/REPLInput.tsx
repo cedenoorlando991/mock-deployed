@@ -3,37 +3,36 @@ import { Dispatch, ReactElement, SetStateAction, useState } from "react";
 import { ControlledInput } from "./ControlledInput";
 import { mockingCSVData } from "../mocking/mockingCSVData";
 
-
+/**
+ * This is the interface for REPL inputs' props!
+ */
 interface REPLInputProps {
-  // TODO: Fill this with desired props... Maybe something to keep track of the submitted commands
-  // CHANGED
   history: ReactElement[];
   setHistory: Dispatch<SetStateAction<ReactElement[]>>;
-
- // csvData: string[][];
-  //setCSVData: Dispatch<SetStateAction<string[][]>>;
 }
-
 let path = "";
-// You can use a custom interface or explicit fields or both! An alternative to the current function header might be:
-// REPLInput(history: string[], setHistory: Dispatch<SetStateAction<string[]>>)
+
+/**
+ * This is the functions to set the command input and mode
+ */
 export function REPLInput(props: REPLInputProps) {
-  // Remember: let React manage state in your webapp.
   // Manages the contents of the input box
-  const [message,setMessage] = useState<string>("Enter a command:")
+  const [message, setMessage] = useState<string>("Enter a command:");
   const [commandString, setCommandString] = useState<string>("");
-  const [mode,setMode] = useState<string>("brief");
+  const [mode, setMode] = useState<string>("brief");
   // Manages the current amount of times the button is clicked
   const [count, setCount] = useState<number>(0);
   const [filepath, setFilepath] = useState<string>("");
-  //const [csvData, setCSVData] = useState<string[][]>();
-
 
   const json = new mockingCSVData();
-function showCSVData(data: string[][]) {
-  if (!data || data.length === 0) {
-    return <p>No data to display.</p>;
-  }
+
+  /**
+   * this is the function to display the csvData
+   */
+  function showCSVData(data: string[][]) {
+    if (!data || data.length === 0) {
+      return <p>No data to display.</p>;
+    }
     return (
       <table style={{ margin: "auto" }}>
         <thead>
@@ -54,94 +53,115 @@ function showCSVData(data: string[][]) {
         </tbody>
       </table>
     );
-  } 
-  
-    function handleSearch(column: string, value: string) {
-      if (filepath) {
-        setCommandString("search");
-        const data = json.mockedView(filepath);
-        if (data) {
-          const columnIndex = isNaN(Number(column))? data[0].indexOf(column): Number(column);
-          if (columnIndex !== -1) {
-            const filteredData = data.filter((row, rowIndex) => rowIndex === 0 || row[columnIndex] === value);
-            setMessage("Search completed successfully!");
-            const table = showCSVData(filteredData);
-            if (mode === "verbose"){
-              props.setHistory([
-                ...props.history,
-                <h4>Command: {commandString}</h4>,
-                <div>Output: {table}</div>,
-              ]);
-            }else{
-               props.setHistory([...props.history, table]);
-            }
+  }
+
+  /**
+   * This is a helper method to handle the search functionality
+   */
+  function handleSearch(column: string, value: string) {
+    if (filepath) {
+      setCommandString("search");
+      const data = json.mockedView(filepath);
+      if (data) {
+        //this method is to determine if the column index is not a number
+        const columnIndex = isNaN(Number(column))
+          ? data[0].indexOf(column)
+          : Number(column);
+        if (columnIndex !== -1) {
+          //this method is to filter the passed in data to search for the data we want
+          const filteredData = data.filter(
+            (row, rowIndex) => rowIndex === 0 || row[columnIndex] === value
+          );
+          setMessage("Search completed successfully!");
+          const table = showCSVData(filteredData);
+          if (mode === "verbose") {
+            props.setHistory([
+              ...props.history,
+              <h4>Command: {commandString}</h4>,
+              <div>Output: {table}</div>,
+            ]);
           } else {
-            setMessage("Column not found.");
+            props.setHistory([...props.history, table]);
           }
-        }
-      } else {
-        setMessage("Load a CSV file first.");
-      }
-    }
-
-
-  // This function is triggered when the button is clicked.
-  function handleSubmit(commandString: string) {
-    setCount(count+1)
-    if (commandString.includes('mode')){
-        const words = commandString.split(" ");
-        if (words.length > 1 && (words[1] === "brief" || words[1] === "verbose")) {
-          setMessage("Mode set to: " + words[1] + "!");
-          setMode(words[1]);
         } else {
-          setMessage("Invalid mode. Please enter 'brief' or 'verbose'.");
+          setMessage("Column not found.");
         }
-        return;
+      }
+    } else {
+      setMessage("Load a CSV file first.");
+    }
+  }
+
+  /**
+   * This function is triggered when the button is clicked.
+   */
+  function handleSubmit(commandString: string) {
+    setCount(count + 1);
+    //This is to get the command of mode and produce with result of the command input
+    if (commandString.includes("mode")) {
+      const words = commandString.split(" ");
+      if (
+        words.length > 1 &&
+        (words[1] === "brief" || words[1] === "verbose")
+      ) {
+        setMessage("Mode set to: " + words[1] + "!");
+        setMode(words[1]);
+      } else {
+        setMessage("Invalid mode. Please enter 'brief' or 'verbose'.");
+      }
+      return;
     }
     props.setHistory([...props.history, <h4>{commandString}</h4>]);
+
+    //This is to get the command of load_file and produce with result of the command input
     if (commandString.includes("load_file")) {
       setCommandString("load_file");
       path = commandString.slice(10);
       setFilepath(path); //might have to check if filepath was correct before setting message
       setMessage("Data Loaded Successfully!");
-      if (mode === 'verbose'){
-          props.setHistory([
-            ...props.history,
-            <h4>Command: load_file</h4>,
-            <p>Output: Data Loaded Successfully!</p>,
-          ]);
+      if (mode === "verbose") {
+        props.setHistory([
+          ...props.history,
+          <h4>Command: load_file</h4>,
+          <p>Output: Data Loaded Successfully!</p>,
+        ]);
       }
       console.log(path);
     }
+
+    //This is to get the command of view the loaded file and produce with result of the command input
     if (commandString.includes("view")) {
       if (path) {
         setCommandString("view");
         const data = json.mockedView(path);
         console.log(data);
         if (data) {
-          setMessage("Data View Success!")
+          setMessage("Data View Success!");
           const table = showCSVData(data);
-          if (mode === 'verbose'){
-           props.setHistory([
-             ...props.history,
-             <h4>Command: {commandString}</h4>,
-             <div>Output: {table}</div>,
-           ]);
-          }else{
-            props.setHistory([...props.history, table])}
+          if (mode === "verbose") {
+            props.setHistory([
+              ...props.history,
+              <h4>Command: {commandString}</h4>,
+              <div>Output: {table}</div>,
+            ]);
+          } else {
+            props.setHistory([...props.history, table]);
           }
         }
       }
-      if (commandString.includes("search")) {
-        const searchWords = commandString.split(/\s+/);
-        if (searchWords.length === 3) {
-          const column = searchWords[1];
-          const value = searchWords[2];
-          handleSearch(column,value);
-        } else {
-          setMessage("Invalid search command. Use 'search <column> <value>'.");
-        }
+    }
+
+    //This is to get the command of searching the viewed file and produce with result of the command input
+    if (commandString.includes("search")) {
+      const searchWords = commandString.split(/\s+/);
+      if (searchWords.length === 3) {
+        const column = searchWords[1];
+        const value = searchWords[2];
+        handleSearch(column, value);
+      } else {
+        setMessage("Invalid search command. Use 'search <column> <value>'.");
       }
+    }
     setCommandString("");
   }
   /**
@@ -162,7 +182,7 @@ function showCSVData(data: string[][]) {
           ariaLabel={"Command input"}
         />
       </fieldset>
-      {/* TODO: Currently this button just counts up, can we make it push the contents of the input box to the history?*/}
+      {/* Currently this button just counts up, we make it push the contents of the input box to the history*/}
       <button onClick={() => handleSubmit(commandString)}>
         Submitted {count} times
       </button>
