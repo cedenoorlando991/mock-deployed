@@ -125,3 +125,18 @@ test("load two files consecutively", async ({ page }) => {
   expect(newHistoryList).toBe("Monday");
 });
 
+test("search should return an empty result", async ({ page }) => {
+  // Fill the input field with a search command that will return no results and click the button
+  await page.fill(
+    "#root > div > div > div.repl-input > fieldset > input",
+    "search non_existent_data"
+  );
+  await page.click("#root > div > div > div.repl-input > button");
+
+  // Check if the result is empty
+  const result = await page.$eval(
+    "#root > div > div > div.repl-output > div",
+    (el) => (el as HTMLDivElement).textContent
+  );
+  expect(result).toBe("No results found.");
+});
