@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import exp from "constants";
 
 test.beforeEach(async ({ page }) => {
   // Go to the starting url before each test
@@ -6,36 +7,36 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("should render REPLInput component initially", async ({ page }) => {
-  const replInput = await page.$(".repl-input");
+  const replInput = await page.$("#root > div > div > div.repl-input");
   expect(replInput).toBeTruthy();
 });
 
-test("should update on input", async ({ page }) => {
-  await page.fill("#root > div > div > div.repl-input > fieldset > input", "load_file test.csv");
+test("history should update on input", async ({ page }) => {
+  await page.fill(
+    "#root > div > div > div.repl-input > fieldset > input",
+    "load_file people.csv"
+  );
   await page.click("#root > div > div > div.repl-input > button");
-  const inputValue = await page.$eval("#root > div > div > div.repl-history > p > h4t",(el) => (el as HTMLInputElement).value
+  const messageValue = await page.$eval(
+    "#root > div > div > div.repl-input > fieldset > legend",
+    (el) => (el as HTMLLegendElement).textContent
   );
-  expect(inputValue).toBe("load_file test.csv");
-});
+  expect(messageValue).toBe("Data Loaded Successfully!");
 
-test("should update history on submit", async ({ page }) => {
-  await page.fill(".repl-input input", "load_file test.csv");
-  await page.click(".repl-input button");
-  const historyItem = await page.$eval(
-    ".repl-input .history h4",
-    (el) => el.textContent
+  const historyList = await page.$eval(
+    "#root > div > div > div.repl-history > div > p",
+    (el) => (el as HTMLParagraphElement).textContent
   );
-  expect(historyItem).toBe("load_file test.csv");
-});
+  expect(historyList).toBe("Data Loaded Successfully!");
 
-test("should search history on submit", async ({ page }) => {
-  await page.fill(".repl-input input", "load_file test.csv");
-  await page.click(".repl-input button");
-  await page.fill(".repl-input input", "search");
-  await page.click(".repl-input button");
-  const historyItem = await page.$eval(
-    ".repl-input .history h4",
-    (el) => el.textContent
+  await page.fill(
+    "#root > div > div > div.repl-input > fieldset > input",
+    "view"
   );
-  expect(historyItem).toBe("search");
+  await page.click("#root > div > div > div.repl-input > button");
+  const newHistoryList = await page.$eval(
+    "#root > div > div > div.repl-history > div:nth-child(2) > table > tbody > tr:nth-child(1) > td:nth-child(1)",
+    (el) => (el as HTMLTableCellElement).textContent
+  );
+  expect(newHistoryList).toBe("Abby");
 });
