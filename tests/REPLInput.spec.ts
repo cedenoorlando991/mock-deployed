@@ -30,7 +30,7 @@ test("history should update on input", async ({ page }) => {
   // Check if the history is updated correctly
   const historyList = await page.$eval(
     "#root > div > div > div.repl-history > div > h4",
-    (el) => (el as HTMLHeadingElement).textContent
+    (el) => (el).textContent
   );
   expect(historyList).toBe("load_file people.csv");
 
